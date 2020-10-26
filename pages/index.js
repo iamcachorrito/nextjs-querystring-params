@@ -1,65 +1,116 @@
 import Head from 'next/head'
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import { identity, pickBy } from 'lodash';
+import { useQueryParams } from '../common/customHooks'
+import Checkbox from '../components/checkbox'
 import styles from '../styles/Home.module.css'
 
-export default function Home() {
+function Home({ query }) {
+
+  const router = useRouter();
+  const [queryParams, setQueryParams] = useQueryParams({ query });
+
+  useEffect(() => {
+    const cleanedObject = pickBy(queryParams, identity);
+    router.push({
+      query: cleanedObject
+    });
+  }, [queryParams])
+
+  const updateQueryParams = (e) => {
+    console.log('hello from updateQueryParams')
+    let filterValue;
+    if (e.target.checked) {
+      if (queryParams[e.target.name]) {
+        filterValue = queryParams[e.target.name];
+        const foundParamValue = filterValue.includes(e.target.value);
+        if (!foundParamValue) {
+          filterValue = filterValue.concat(`;${e.target.value}`);
+        }
+      } else {
+        filterValue = `${e.target.value}`;
+      }
+      setQueryParams({
+        ...queryParams,
+        [e.target.name]: filterValue
+      });
+    } else {
+      if (queryParams[e.target.name].includes(`;${e.target.value}`)) {
+        filterValue = queryParams[e.target.name].replace(`;${e.target.value}`, '');
+      } else if (queryParams[e.target.name].includes(`${e.target.value};`)) {
+        filterValue = queryParams[e.target.name].replace(`${e.target.value};`, '');
+      } else {
+        filterValue = '';
+      }
+      setQueryParams({
+        ...queryParams,
+        [e.target.name]: filterValue
+      });
+    }
+  }
+
   return (
     <div className={styles.container}>
       <Head>
         <title>Create Next App</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Checkbox
+          elemId='checkbox1'
+          elemName='categorias'
+          elemValue='ropa'
+          params={queryParams}
+          updateQueryParams={updateQueryParams}
         >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
+          Ropa
+        </Checkbox>
+        <Checkbox
+          elemId='checkbox2'
+          elemName='categorias'
+          elemValue='zapatos'
+          params={queryParams}
+          updateQueryParams={updateQueryParams}
+        >
+          Zapatos
+        </Checkbox>
+        <Checkbox
+          elemId='checkbox3'
+          elemName='categorias'
+          elemValue='sombreros'
+          params={queryParams}
+          updateQueryParams={updateQueryParams}
+        >
+          Sombreros
+        </Checkbox>
+        <Checkbox
+          elemId='checkbox4'
+          elemName='marcas'
+          elemValue='google'
+          params={queryParams}
+          updateQueryParams={updateQueryParams}
+        >
+          Google
+        </Checkbox>
+        <Checkbox
+          elemId='checkbox5'
+          elemName='marcas'
+          elemValue='facebook'
+          params={queryParams}
+          updateQueryParams={updateQueryParams}
+        >
+          Facebook
+        </Checkbox>
+      </main>
     </div>
   )
 }
+
+Home.getInitialProps = ({ query }) => {
+  return {
+    query
+  };
+}
+
+export default Home;
